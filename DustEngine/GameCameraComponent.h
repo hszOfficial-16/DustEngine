@@ -1,0 +1,6 @@
+#ifndef _GAME_CAMERA_COMPONENT_H_
+#define _GAME_CAMERA_COMPONENT_H_
+
+
+
+#endif // !_GAME_CAMERA_COMPONENT_H_

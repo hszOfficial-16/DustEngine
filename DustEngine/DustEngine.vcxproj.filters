@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header">
+      <UniqueIdentifier>{ea60a260-06c9-4868-ad65-5e7ee80a3a1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{18a2fb91-eb14-4198-8033-f16819915be5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\GameCommon">
+      <UniqueIdentifier>{82f098ae-c733-4116-b23d-e352a06bb5c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\GameStructure">
+      <UniqueIdentifier>{e1d8cdc3-6fa0-43f6-a599-57fe6ba6851c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\GameEngine">
+      <UniqueIdentifier>{9643d2c3-02ef-4cee-be98-66a2a2dcc296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\GameComponent">
+      <UniqueIdentifier>{416f40da-7233-4444-a9f4-792e73b84927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\GameSystem">
+      <UniqueIdentifier>{59faa758-ffef-4b3d-b3bd-8b7d84d00419}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GameBlockAllocator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameGraphicModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMediaModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameFileModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameDirector.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimeModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEntity.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameBlockAllocator.h">
+      <Filter>Header\GameCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameGraphicModule.h">
+      <Filter>Header\GameCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMediaModule.h">
+      <Filter>Header\GameCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameFileModule.h">
+      <Filter>Header\GameCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameData.h">
+      <Filter>Header\GameStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMath.h">
+      <Filter>Header\GameStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameDirector.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimeModule.h">
+      <Filter>Header\GameCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEntity.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameFactory.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameComponent.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTransformComponent.h">
+      <Filter>Header\GameComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSpriteComponent.h">
+      <Filter>Header\GameComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCameraComponent.h">
+      <Filter>Header\GameComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePhysicalSystem.h">
+      <Filter>Header\GameSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
