@@ -48,6 +48,15 @@
     <ClCompile Include="GameEntity.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="GameResourceManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSystem.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameBlockAllocator.h">
@@ -80,9 +89,6 @@
     <ClInclude Include="GameEntity.h">
       <Filter>Header\GameEngine</Filter>
     </ClInclude>
-    <ClInclude Include="GameFactory.h">
-      <Filter>Header\GameEngine</Filter>
-    </ClInclude>
     <ClInclude Include="GameComponent.h">
       <Filter>Header\GameEngine</Filter>
     </ClInclude>
@@ -97,6 +103,15 @@
     </ClInclude>
     <ClInclude Include="GamePhysicalSystem.h">
       <Filter>Header\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GameResourceManager.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSystem.h">
+      <Filter>Header\GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBodyComponent.h">
+      <Filter>Header\GameComponent</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

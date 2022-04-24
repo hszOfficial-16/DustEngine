@@ -3,25 +3,37 @@
 #include "GameTimeModule.h"
 
 #include <new>
-#include <vector>
 #include <thread>
 #include <chrono>
+#include <unordered_map>
+
+// 默认场景
+class GameDefaultScene : public GameScene
+{
+private:
+	GameDefaultScene() = default;
+	~GameDefaultScene() = default;
+
+public:
+	virtual void Update() {}
+
+	static GameScene* Create()
+	{
+		return new GameDefaultScene;
+	}
+};
 
 class GameDirector::Impl
 {
 public:
 	// 当前运行场景
 	GameScene*	m_pCurrentScene;
+
 	// 是否退出主循环
 	bool		m_bIsQuit;
 
-	std::vector<GameTexture*>	m_vecTextures;
-	std::vector<GameFont*>		m_vecFonts;
-
-	std::vector<GameMusic*>		m_vecMusic;
-	std::vector<GameSound*>		m_vecSounds;
-
-	std::vector<GameScene::Def> m_vecScenes;
+	// 储存场景构造函数的表
+	std::unordered_map<std::string, GameSceneConstructor> m_mapSceneConstructors;
 
 	// 用于控制游戏帧率的变量
 	std::chrono::steady_clock::time_point t1;		// 当帧工作完成前的时间点
@@ -36,8 +48,8 @@ public:
 public:
 	Impl()
 	{
-		m_pCurrentScene = nullptr;
 		m_bIsQuit = false;
+		m_pCurrentScene = GameDefaultScene::Create();
 
 		dFrameTime = std::chrono::duration<double>(0.0);	
 		dSleepAdjust = std::chrono::duration<double>(0.0);	
@@ -45,11 +57,7 @@ public:
 		dTimeUsed = std::chrono::duration<double>(0.0);
 		dSleepTime = std::chrono::duration<double>(0.0);
 	}
-
-	~Impl()
-	{
-
-	}
+	~Impl() = default;
 };
 
 void GameDirector::Run()
@@ -59,11 +67,11 @@ void GameDirector::Run()
 		// 开始为当帧计时
 		m_pImpl->t1 = std::chrono::steady_clock::now();
 
+		// 更新时间系统
+		GameTimeSystem::GetInstance().Update();
+		
+		// 更新场景系统
 		m_pImpl->m_pCurrentScene->Update();
-
-		GameGraphicModule::GetInstance().RenderClear();
-		m_pImpl->m_pCurrentScene->Draw();
-		GameGraphicModule::GetInstance().RenderPresent();
 
 		// 计算休眠时间
 		m_pImpl->t2 = std::chrono::steady_clock::now();
@@ -84,58 +92,21 @@ void GameDirector::Run()
 	}
 }
 
-void GameDirector::RegisterScene(const GameScene::Def& defScene)
+int GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor)
 {
-	m_pImpl->m_vecScenes.push_back(defScene);
+	m_pImpl->m_mapSceneConstructors[strSceneName] = funcConstructor;
+
+	return -1;
 }
 
-void GameDirector::SwitchScene(size_t nIndex)
+void GameDirector::ShiftScene(std::string strSceneName)
 {
+	// 场景的内存不交给内存池管理
 	if (m_pImpl->m_pCurrentScene)
 	{
-		GameSceneSystem::GetInstance().DestroyScene(m_pImpl->m_pCurrentScene);
+		delete m_pImpl->m_pCurrentScene;
 	}
-	m_pImpl->m_pCurrentScene = GameSceneSystem::GetInstance().CreateScene(m_pImpl->m_vecScenes[nIndex]);
-}
-
-void GameDirector::AddTexture(GameTexture* pTexture)
-{
-	m_pImpl->m_vecTextures.push_back(pTexture);
-}
-
-GameTexture* GameDirector::GetTexture(size_t nIndex)
-{
-	return m_pImpl->m_vecTextures[nIndex];
-}
-
-void GameDirector::AddFont(GameFont* pFont)
-{
-	m_pImpl->m_vecFonts.push_back(pFont);
-}
-
-GameFont* GameDirector::GetFont(size_t nIndex)
-{
-	return m_pImpl->m_vecFonts[nIndex];
-}
-
-void GameDirector::AddMusic(GameMusic* pMusic)
-{
-	m_pImpl->m_vecMusic.push_back(pMusic);
-}
-
-GameMusic* GameDirector::GetMusic(size_t nIndex)
-{
-	return m_pImpl->m_vecMusic[nIndex];
-}
-
-void GameDirector::AddSound(GameSound* pSound)
-{
-	m_pImpl->m_vecSounds.push_back(pSound);
-}
-
-GameSound* GameDirector::GetSound(size_t nIndex)
-{
-	return m_pImpl->m_vecSounds[nIndex];
+	m_pImpl->m_pCurrentScene = m_pImpl->m_mapSceneConstructors[strSceneName]();
 }
 
 GameDirector::GameDirector()

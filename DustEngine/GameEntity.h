@@ -1,14 +1,17 @@
 #ifndef _GAME_ENTITY_H_
 #define _GAME_ENTITY_H_
 
-#include "GameComponent.h"
+#include <string>
+
+class GameScene;
+class GameComponent;
 
 class GameEntity
 {
 public:
 	struct Def
 	{
-		
+		GameScene* pScene;
 	};
 
 	// 获取父实体
@@ -31,6 +34,25 @@ public:
 	// 删除组件
 	void DeleteComponent(const std::string& strName);
 
+	// 获取组件
+	GameComponent* GetComponent(const std::string& strName);
+
+	// 获取实体在场景中的下一个实体
+	GameEntity* GetSceneNext();
+
+	// 获取实体所属的场景
+	GameScene* GetScene();
+
+protected:
+	// 设置实体在场景中的下一个实体
+	void SetSceneNext(GameEntity* pEntity);
+
+	// 设置实体所属的场景
+	void SetScene(GameScene* pScene);
+
+	// 将实体的所有组件全部添加到场景中
+	void AddComponentToScene(GameScene* pScene);
+
 private:
 	class Impl;
 	Impl* m_pImpl;
@@ -38,6 +60,32 @@ private:
 private:
 	GameEntity(const Def& defEntity);
 	~GameEntity();
+
+	friend class GameScene;
+	friend class GameEntityFactory;
+};
+
+class GameEntityFactory
+{
+public:
+	GameEntity* CreateEntity(GameScene* pScene);
+
+	void DestroyEntity(GameEntity* pEntity);
+
+	GameEntity* CloneEntity(GameEntity* pEntity);
+
+public:
+	~GameEntityFactory() = default;
+	GameEntityFactory(const GameEntityFactory&) = delete;
+	GameEntityFactory& operator=(const GameEntityFactory&) = delete;
+	static GameEntityFactory& GetInstance()
+	{
+		static GameEntityFactory instance;
+		return instance;
+	}
+
+private:
+	GameEntityFactory() = default;
 };
 
 #endif // !_GAME_ENTITY_H_

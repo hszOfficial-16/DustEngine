@@ -30,6 +30,19 @@ struct GameVec2
 		return { x * a, y * a };
 	}
 
+	GameVec2& operator=(const GameVec2& v)
+	{
+		if (this == &v)
+		{
+			return (*this);
+		}
+
+		this->x = v.x;
+		this->y = v.y;
+
+		return *this;
+	}
+
 	GameVec2() : x(0), y(0) {}
 
 	GameVec2(int xIn, int yIn) : x(xIn), y(yIn) {}
@@ -69,6 +82,19 @@ struct GameFVec2
 	GameFVec2&& operator*(float a)
 	{
 		return { x * a, y * a };
+	}
+
+	GameFVec2& operator=(const GameFVec2& v)
+	{
+		if (this == &v)
+		{
+			return (*this);
+		}
+
+		this->x = v.x;
+		this->y = v.y;
+
+		return *this;
 	}
 
 	// ·µ»Ø³¤¶È
@@ -115,6 +141,21 @@ struct GameRect
 {
 	int x, y, w, h;
 
+	GameRect& operator=(const GameRect& rect)
+	{
+		if (this == &rect)
+		{
+			return *this;
+		}
+
+		this->x = rect.x;
+		this->y = rect.y;
+		this->w = rect.w;
+		this->h = rect.h;
+
+		return *this;
+	}
+
 	GameRect() :
 		x(0), y(0), w(0), h(0) {}
 
@@ -141,6 +182,21 @@ struct GameRect
 struct GameFRect
 {
 	float x, y, w, h;
+
+	GameFRect& operator=(const GameFRect& rect)
+	{
+		if (this == &rect)
+		{
+			return *this;
+		}
+
+		this->x = rect.x;
+		this->y = rect.y;
+		this->w = rect.w;
+		this->h = rect.h;
+
+		return *this;
+	}
 
 	GameFRect() :
 		x(0.0f), y(0.0f), w(0.0f), h(0.0f) {}
