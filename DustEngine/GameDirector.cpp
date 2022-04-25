@@ -15,8 +15,6 @@ private:
 	~GameDefaultScene() = default;
 
 public:
-	virtual void Update() {}
-
 	static GameScene* Create()
 	{
 		return new GameDefaultScene;
@@ -102,6 +100,9 @@ int GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor f
 void GameDirector::ShiftScene(std::string strSceneName)
 {
 	// 场景的内存不交给内存池管理
+	if (m_pImpl->m_mapSceneConstructors.find(strSceneName) == m_pImpl->m_mapSceneConstructors.end())
+		return;
+
 	if (m_pImpl->m_pCurrentScene)
 	{
 		delete m_pImpl->m_pCurrentScene;

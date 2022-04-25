@@ -143,7 +143,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Setupapi.lib;winmm.lib;imm32.lib;version.lib;Shlwapi.lib;cjson.lib;LuaLib-5.4.0.lib;SDL2.lib;SDL2_gfx.lib;SDL2_image.lib;jpeg.lib;libpng16.lib;libwebpmux.lib;lzma.lib;tiff.lib;turbojpeg.lib;webp.lib;webpdecoder.lib;webpdemux.lib;zlib.lib;SDL2_mixer.lib;FLAC.lib;FLAC++.lib;mpg123.lib;modplug.lib;ogg.lib;opus.lib;opusfile.lib;out123.lib;syn123.lib;vorbis.lib;vorbisenc.lib;vorbisfile.lib;SDL2_ttf.lib;brotlicommon-static.lib;brotlidec-static.lib;brotlienc-static.lib;bz2.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>box2d.lib;Setupapi.lib;winmm.lib;imm32.lib;version.lib;Shlwapi.lib;cjson.lib;LuaLib-5.4.0.lib;SDL2.lib;SDL2_gfx.lib;SDL2_image.lib;jpeg.lib;libpng16.lib;libwebpmux.lib;lzma.lib;tiff.lib;turbojpeg.lib;webp.lib;webpdecoder.lib;webpdemux.lib;zlib.lib;SDL2_mixer.lib;FLAC.lib;FLAC++.lib;mpg123.lib;modplug.lib;ogg.lib;opus.lib;opusfile.lib;out123.lib;syn123.lib;vorbis.lib;vorbisenc.lib;vorbisfile.lib;SDL2_ttf.lib;brotlicommon-static.lib;brotlidec-static.lib;brotlienc-static.lib;bz2.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>./lib/cjson/x64/;./lib/Lua5.4/x64/;./lib/SDL2/x64/;./lib/SDL2_gfx/x64/;./lib/SDL2_image/x64/;./lib/SDL2_mixer/x64/;./lib/SDL2_ttf/x64/;./lib/SDL2_net/x64/;./lib/Box2D/x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

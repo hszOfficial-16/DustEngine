@@ -41,8 +41,8 @@ private:
 	GameFVec2	m_vec2Scale;
 
 private:
-	GameTransformComponent(const Def& defTransform)
-		: GameComponent(defTransform)
+	GameTransformComponent(const Def& defTransform) :
+		GameComponent(defTransform)
 	{
 		m_vec2Position = defTransform.vec2Position;
 		m_fRotation = defTransform.fRotation;

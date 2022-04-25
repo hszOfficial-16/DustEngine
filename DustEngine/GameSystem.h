@@ -8,10 +8,18 @@
 class GameSystem
 {
 public:
-	struct Def
+	class Def
 	{
+	private:
 		std::string		strName;
 		uint16_t		nSize;
+
+	public:
+		Def(std::string strNameIn, uint16_t nSizeIn) :
+			strName(strNameIn), nSize(nSizeIn) {}
+
+		friend class GameSystem;
+		friend class GameSystemFactory;
 	};
 
 	// 系统更新函数
@@ -56,7 +64,7 @@ protected:
 	friend class GameSystemFactory;
 };
 
-typedef GameSystem* (*GameSystemConstructor)();
+typedef GameSystem* (*GameSystemConstructor)(const GameSystem::Def& defSystem);
 
 class GameSystemFactory
 {

@@ -28,7 +28,7 @@ GameSystem* GameSystemFactory::CreateSystem(const GameSystem::Def& defSystem)
 		return nullptr;
 
 	// 根据系统提供的构造函数来构造该系统
-	GameSystem* pSystem = m_pImpl->m_mapSystemConstructors[defSystem.strName]();
+	GameSystem* pSystem = m_pImpl->m_mapSystemConstructors[defSystem.strName](defSystem);
 	return pSystem;
 }
 

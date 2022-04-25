@@ -16,6 +16,7 @@ class GameScene::Impl
 public:
 	GameEntity* m_pEntityHead;
 	GameSystem* m_pSystemHead;
+
 	std::unordered_map<std::string, GameComponent*> m_mapComponentHead;
 
 public:
