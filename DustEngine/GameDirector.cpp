@@ -2,6 +2,8 @@
 #include "GameBlockAllocator.h"
 #include "GameTimeModule.h"
 
+#include "GameGraphicModule.h"
+
 #include <new>
 #include <thread>
 #include <chrono>
@@ -67,9 +69,15 @@ void GameDirector::Run()
 
 		// 更新时间系统
 		GameTimeSystem::GetInstance().Update();
-		
+
+		// 清除上一帧的图像缓存
+		GameGraphicModule::GetInstance().RenderClear();
+
 		// 更新场景系统
 		m_pImpl->m_pCurrentScene->Update();
+
+		// 更新窗口图像
+		GameGraphicModule::GetInstance().RenderPresent();
 
 		// 计算休眠时间
 		m_pImpl->t2 = std::chrono::steady_clock::now();

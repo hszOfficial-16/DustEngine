@@ -151,26 +151,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameBlockAllocator.h" />
-    <ClInclude Include="GameBodyComponent.h" />
     <ClInclude Include="GameCameraComponent.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameDirector.h" />
     <ClInclude Include="GameEntity.h" />
+    <ClInclude Include="GameFactory.h" />
     <ClInclude Include="GameFileModule.h" />
     <ClInclude Include="GameGraphicModule.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameMediaModule.h" />
-    <ClInclude Include="GamePhysicalSystem.h" />
     <ClInclude Include="GameResourceManager.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="GamePhotographicSystem.h" />
     <ClInclude Include="GameSpriteComponent.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="GameTimeModule.h" />
     <ClInclude Include="GameTransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="GameDirector.cpp" />
     <ClCompile Include="GameEntity.cpp" />
     <ClCompile Include="GameFileModule.cpp" />
@@ -179,7 +178,6 @@
     <ClCompile Include="GameMediaModule.cpp" />
     <ClCompile Include="GameResourceManager.cpp" />
     <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="GameSystem.cpp" />
     <ClCompile Include="GameTimeModule.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

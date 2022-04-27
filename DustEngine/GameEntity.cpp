@@ -1,10 +1,9 @@
 #include "GameEntity.h"
-#include "GameBlockAllocator.h"
 #include "GameScene.h"
 #include "GameComponent.h"
+#include "GameBlockAllocator.h"
 
 #include <new>
-#include <string.h>
 #include <unordered_map>
 
 class GameEntity::Impl
@@ -13,37 +12,37 @@ public:
 	// 实体的所有组件
 	std::unordered_map<std::string, GameComponent*> m_mapComponents;
 
+	// 实体的组件列表头(用于遍历)
+	GameComponent* m_pComponentHead;
+
 	// 实体的父子关系
 	GameEntity* m_pParent;
 	GameEntity* m_pHead;
 	GameEntity* m_pPrev;
 	GameEntity* m_pNext;
 
+	// 实体所属的场景
+	GameScene* m_pScene;
 	// 实体在场景中对应的下一个实体
 	GameEntity* m_pSceneNext;
 
-	// 实体所属的场景
-	GameScene* m_pScene;
-
 public:
-	Impl(const Def& defEntity)
+	Impl()
 	{
+		m_pComponentHead = nullptr;
+
 		m_pParent = nullptr;
 		m_pHead = nullptr;
 		m_pPrev = nullptr;
 		m_pNext = nullptr;
 
-		m_pScene = defEntity.pScene;
+		m_pScene = nullptr;
 		m_pSceneNext = nullptr;
 	}
-	~Impl()
-	{
-		for (std::unordered_map<std::string, GameComponent*>::iterator iter = m_mapComponents.begin();
-			iter != m_mapComponents.end(); iter++)
-		{
 
-		}
-	}
+	// 由于组件的生命周期由场景管理
+	// 所以实体不负责析构所有组件
+	~Impl() = default;
 };
 
 GameEntity* GameEntity::GetParent()
@@ -127,11 +126,20 @@ void GameEntity::DeleteChild(GameEntity* pChild)
 
 void GameEntity::AddComponent(GameComponent* pComponent)
 {
+	if (!pComponent) return;
+
+	// 将组件加入到该实体中
 	pComponent->SetEntity(this);
 	m_pImpl->m_mapComponents[pComponent->GetName()] = pComponent;
 
+	if (m_pImpl->m_pComponentHead)
+	{
+		m_pImpl->m_pComponentHead->SetEntityNext(pComponent);
+	}
+	m_pImpl->m_pComponentHead = pComponent;
+
 	// 如果实体在场景中，则将该组件加入场景中
-	if (m_pImpl->m_pScene) m_pImpl->m_pScene->AddComponent(pComponent);
+	if (GetScene()) GetScene()->AddComponent(pComponent);
 }
 
 void GameEntity::DeleteComponent(const std::string& strName)
@@ -139,14 +147,24 @@ void GameEntity::DeleteComponent(const std::string& strName)
 	// 寻找该组件，如果没找到就返回
 	std::unordered_map<std::string, GameComponent*>::iterator iter =
 		m_pImpl->m_mapComponents.find(strName);
-
 	if (iter == m_pImpl->m_mapComponents.end()) return;
 
-	// 如果实体在场景中，则从场景中删除该组件
-	if (m_pImpl->m_pScene) m_pImpl->m_pScene->DeleteComponent((*iter).second);
+	GameComponent* pComponent = (*iter).second;
 
+	// 如果实体在场景中，则从场景中删除该组件
+	if (m_pImpl->m_pScene) m_pImpl->m_pScene->DeleteComponent(pComponent);
+
+	// 将组件从实体中删除,并析构掉
 	m_pImpl->m_mapComponents.erase(iter);
-	GameBlockAllocator::GetInstance().Free((*iter).second, (*iter).second->GetSize());
+
+	GameComponent* pFound = GetComponentList();
+	while (pFound->GetEntityNext() != pComponent)
+	{
+		pFound = pFound->GetEntityNext();
+	}
+	pFound->SetEntityNext(pComponent->GetEntityNext());
+
+	GameBlockAllocator::GetInstance().Free(pComponent, pComponent->GetSize());
 }
 
 GameComponent* GameEntity::GetComponent(const std::string& strName)
@@ -155,6 +173,11 @@ GameComponent* GameEntity::GetComponent(const std::string& strName)
 		return nullptr;
 
 	return m_pImpl->m_mapComponents[strName];
+}
+
+GameComponent* GameEntity::GetComponentList()
+{
+	return m_pImpl->m_pComponentHead;
 }
 
 GameEntity* GameEntity::GetSceneNext()
@@ -186,57 +209,14 @@ void GameEntity::AddComponentToScene(GameScene* pScene)
 	}
 }
 
-GameEntity::GameEntity(const Def& defEntity)
+GameEntity::GameEntity()
 {
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Impl));
-	m_pImpl = new (pMem) Impl(defEntity);
+	m_pImpl = new (pMem) Impl();
 }
 
 GameEntity::~GameEntity()
 {
 	m_pImpl->~Impl();
 	GameBlockAllocator::GetInstance().Free(m_pImpl, sizeof(Impl));
-}
-
-GameEntity* GameEntityFactory::CreateEntity(GameScene* pScene)
-{
-	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameEntity));
-	GameEntity* pEntity = new (pMem) GameEntity({ pScene });
-	return pEntity;
-}
-
-void GameEntityFactory::DestroyEntity(GameEntity* pEntity)
-{
-	pEntity->~GameEntity();
-	GameBlockAllocator::GetInstance().Free(pEntity, sizeof(GameEntity));
-}
-
-GameEntity* GameEntityFactory::CloneEntity(GameEntity* pEntity)
-{
-	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameEntity));
-
-	GameEntity::Def defEntity = { pEntity->GetScene() };
-	GameEntity* pCloneEntity = new (pMem) GameEntity(defEntity);
-
-	for (std::unordered_map<std::string, GameComponent*>::iterator iter = pEntity->m_pImpl->m_mapComponents.begin();
-		iter != pEntity->m_pImpl->m_mapComponents.end(); iter++)
-	{
-		// 拷贝组件的内存，并添加到实体当中
-		void* pMemComponent = GameBlockAllocator::GetInstance().Allocate((*iter).second->GetSize());
-		memcpy(pMemComponent, (*iter).second, (*iter).second->GetSize());
-		GameComponent* pCloneComponent = (GameComponent*)pMemComponent;
-		pCloneEntity->AddComponent(pCloneComponent);
-	}
-
-	if (pEntity->m_pImpl->m_pParent)
-	{
-		pEntity->m_pImpl->m_pParent->AddChild(pCloneEntity);
-	}
-	for (GameEntity* pChild = pEntity->GetChildList(); pChild; pChild = pChild->GetNext())
-	{
-		GameEntity* pCloneChild = CloneEntity(pChild);
-		pCloneEntity->AddChild(pCloneChild);
-	}
-
-	return pCloneEntity;
 }

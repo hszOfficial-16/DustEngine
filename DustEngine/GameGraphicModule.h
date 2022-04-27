@@ -82,8 +82,8 @@ public:
 	// 设置纹理的 RGBA 颜色
 	void SetColor(const GameColor& color);
 
-	// 获取纹理的矩形大小
-	GameVec2 GetRect();
+	// 获取纹理的大小
+	GameVec2 GetSize();
 
 	// 获取纹理的访问模式
 	AccessMode GetAccessMode();
@@ -216,12 +216,12 @@ public:
 	// @param pGameTexture: 游戏纹理类(静态/动态)
 	// @param rectSrc: 裁剪矩形
 	// @param rectDst: 绘制矩形
-	// @param fRadian: 旋转弧度
+	// @param fAngle: 旋转角度
 	// @param vec2Anchor: 锚点,默认为中心点(0.5f, 0.5f)
 	// @param emFlip: 翻转类型
 	void RenderCopy(GameTexture* pGameTexture,
 		const GameRect& rectSrc, const GameFRect& rectDst,
-		float fRadian, const GameFVec2& vec2Anchor, GameFlipMode emFlip
+		float fAngle, const GameFVec2& vec2Anchor, GameFlipMode emFlip
 	);
 
 	// 清空当前渲染器目标画面内容

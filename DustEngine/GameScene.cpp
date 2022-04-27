@@ -1,12 +1,9 @@
 #include "GameScene.h"
-#include "GameBlockAllocator.h"
 
 #include "GameTimeModule.h"
 #include "GameResourceManager.h"
 
-#include "GameEntity.h"
-#include "GameComponent.h"
-#include "GameSystem.h"
+#include "GameFactory.h"
 
 #include <new>
 #include <unordered_map>
@@ -29,7 +26,7 @@ public:
 	{
 		for (GameSystem* pSystem = m_pSystemHead; pSystem; pSystem = pSystem->GetSceneNext())
 		{
-			GameSystemFactory::GetInstance().DestroySystem(pSystem);
+			GameFactory::GetInstance().DestroySystem(pSystem);
 		}
 
 		for (std::unordered_map<std::string, GameComponent*>::iterator iter = m_mapComponentHead.begin();
@@ -37,13 +34,13 @@ public:
 		{
 			for (GameComponent* pComponent = m_mapComponentHead[(*iter).first]; pComponent; pComponent = pComponent->GetSceneNext())
 			{
-				GameComponentFactory::GetInstance().DestroyComponent(pComponent);
+				GameFactory::GetInstance().DestroyComponent(pComponent);
 			}
 		}
 
 		for (GameEntity* pEntity = m_pEntityHead; pEntity; pEntity = pEntity->GetSceneNext())
 		{
-			GameEntityFactory::GetInstance().DestroyEntity(pEntity);
+			GameFactory::GetInstance().DestroyEntity(pEntity);
 		}
 	}
 };
@@ -58,6 +55,8 @@ void GameScene::Update()
 
 void GameScene::AddEntity(GameEntity* pEntity)
 {
+	if (!pEntity) return;
+
 	// 若实体已在该场景中，则不作处理
 	if (pEntity->GetScene() == this) return;
 
@@ -75,6 +74,8 @@ void GameScene::AddEntity(GameEntity* pEntity)
 
 void GameScene::DeleteEntity(GameEntity* pEntity)
 {
+	if (!pEntity) return;
+
 	if (pEntity->GetScene() != this) return;
 
 	GameEntity* pFound = GetEntityList();
@@ -84,18 +85,18 @@ void GameScene::DeleteEntity(GameEntity* pEntity)
 	}
 	pFound->SetSceneNext(pEntity->GetSceneNext());
 
-	GameEntityFactory::GetInstance().DestroyEntity(pEntity);
+	GameFactory::GetInstance().DestroyEntity(pEntity);
 }
 
 GameEntity* GameScene::GetEntityList()
 {
-	if (m_pImpl->m_pEntityHead) return nullptr;
-	
 	return m_pImpl->m_pEntityHead;
 }
 
 void GameScene::AddComponent(GameComponent* pComponent)
 {
+	if (!pComponent) return;
+
 	if (m_pImpl->m_mapComponentHead[pComponent->GetName()])
 	{
 		pComponent->SetSceneNext(m_pImpl->m_mapComponentHead[pComponent->GetName()]);
@@ -105,6 +106,8 @@ void GameScene::AddComponent(GameComponent* pComponent)
 
 void GameScene::DeleteComponent(GameComponent* pComponent)
 {
+	if (!pComponent) return;
+
 	if (pComponent->GetEntity()->GetScene() != this) return;
 
 	// 将组件从场景中删除
@@ -115,18 +118,22 @@ void GameScene::DeleteComponent(GameComponent* pComponent)
 	}
 	pFound->SetSceneNext(pComponent->GetSceneNext());
 
-	GameComponentFactory::GetInstance().DestroyComponent(pComponent);
+	GameFactory::GetInstance().DestroyComponent(pComponent);
 }
 
 GameComponent* GameScene::GetComponentList(std::string strComponentName)
 {
-	if (!m_pImpl->m_mapComponentHead[strComponentName]) return nullptr;
-	
 	return m_pImpl->m_mapComponentHead[strComponentName];
 }
 
 void GameScene::AddSystem(GameSystem* pSystem)
 {
+	if (!pSystem) return;
+
+	if (pSystem->GetScene() == this) return;
+
+	pSystem->SetScene(this);
+
 	if (m_pImpl->m_pSystemHead)
 	{
 		pSystem->SetSceneNext(m_pImpl->m_pSystemHead);
@@ -136,6 +143,8 @@ void GameScene::AddSystem(GameSystem* pSystem)
 
 void GameScene::DeleteSystem(GameSystem* pSystem)
 {
+	if (!pSystem) return;
+
 	if (pSystem->GetScene() != this) return;
 
 	GameSystem* pFound = GetSystemList();
@@ -145,13 +154,11 @@ void GameScene::DeleteSystem(GameSystem* pSystem)
 	}
 	pFound->SetSceneNext(pSystem->GetSceneNext());
 
-	GameSystemFactory::GetInstance().DestroySystem(pSystem);
+	GameFactory::GetInstance().DestroySystem(pSystem);
 }
 
 GameSystem* GameScene::GetSystemList()
 {
-	if (!m_pImpl->m_pSystemHead) return nullptr;
-
 	return m_pImpl->m_pSystemHead;
 }
 

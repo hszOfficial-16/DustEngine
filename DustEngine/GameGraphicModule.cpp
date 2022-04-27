@@ -40,7 +40,7 @@ void GameTexture::SetColor(const GameColor& color)
 	SDL_SetTextureAlphaMod(m_pImpl->m_pTexture, color.a);
 }
 
-GameVec2 GameTexture::GetRect()
+GameVec2 GameTexture::GetSize()
 {
 	GameVec2 vec2Size;
 	SDL_QueryTexture(m_pImpl->m_pTexture, nullptr, nullptr, &vec2Size.x, &vec2Size.y);
@@ -381,6 +381,7 @@ void GameGraphicModule::RenderSetViewport(const GameRect& rectViewport)
 		rectViewport.w,
 		rectViewport.h
 	};
+
 	SDL_RenderSetViewport(m_pImpl->m_pRenderer, &_rectViewport);
 }
 
@@ -414,7 +415,7 @@ void GameGraphicModule::RenderSetDrawBlendMode(GameBlendMode blend)
 
 void GameGraphicModule::RenderCopy(GameTexture* pGameTexture,
 	const GameRect& rectSrc, const GameFRect& rectDst,
-	float fRadian, const GameFVec2& vec2Anchor, GameFlipMode emFlip)
+	float fAngle, const GameFVec2& vec2Anchor, GameFlipMode emFlip)
 {
 	if (!pGameTexture) return;
 
@@ -433,7 +434,7 @@ void GameGraphicModule::RenderCopy(GameTexture* pGameTexture,
 
 	SDL_RenderCopyExF(m_pImpl->m_pRenderer, pGameTexture->m_pImpl->m_pTexture,
 		&m_pImpl->m_rectSrc, &m_pImpl->m_rectDst,
-		360.0f - (fRadian * 180.0f / 3.14159265359f), &m_pImpl->m_pointAnchor, (SDL_RendererFlip)emFlip);
+		fAngle, &m_pImpl->m_pointAnchor, (SDL_RendererFlip)emFlip);
 }
 
 void GameGraphicModule::RenderClear()

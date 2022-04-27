@@ -9,11 +9,6 @@ class GameComponent;
 class GameEntity
 {
 public:
-	struct Def
-	{
-		GameScene* pScene;
-	};
-
 	// 获取父实体
 	GameEntity* GetParent();
 	// 设置父实体
@@ -36,12 +31,13 @@ public:
 
 	// 获取组件
 	GameComponent* GetComponent(const std::string& strName);
-
-	// 获取实体在场景中的下一个实体
-	GameEntity* GetSceneNext();
+	// 获取组件列表头
+	GameComponent* GetComponentList();
 
 	// 获取实体所属的场景
 	GameScene* GetScene();
+	// 获取实体在场景中的下一个实体
+	GameEntity* GetSceneNext();
 
 protected:
 	// 设置实体在场景中的下一个实体
@@ -57,35 +53,12 @@ private:
 	class Impl;
 	Impl* m_pImpl;
 
-private:
-	GameEntity(const Def& defEntity);
-	~GameEntity();
+protected:
+	GameEntity();
+	virtual ~GameEntity();
 
 	friend class GameScene;
-	friend class GameEntityFactory;
-};
-
-class GameEntityFactory
-{
-public:
-	GameEntity* CreateEntity(GameScene* pScene);
-
-	void DestroyEntity(GameEntity* pEntity);
-
-	GameEntity* CloneEntity(GameEntity* pEntity);
-
-public:
-	~GameEntityFactory() = default;
-	GameEntityFactory(const GameEntityFactory&) = delete;
-	GameEntityFactory& operator=(const GameEntityFactory&) = delete;
-	static GameEntityFactory& GetInstance()
-	{
-		static GameEntityFactory instance;
-		return instance;
-	}
-
-private:
-	GameEntityFactory() = default;
+	friend class GameFactory;
 };
 
 #endif // !_GAME_ENTITY_H_
