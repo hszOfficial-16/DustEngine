@@ -53,7 +53,22 @@ private:
 
 		GamePhotographicSystem::Def defPhotographic;
 		AddSystem(GameFactory::GetInstance().CreateSystem<GamePhotographicSystem>(defPhotographic));
-	}
+
+		GameMailbox* pTestMailbox = GameFactory::GetInstance().CreateMailbox({ { "entity", "810853" } });
+		GameMailboxManager::GetInstance().Register(pTestMailbox);
+
+		GameMessage* pMessage = GameFactory::GetInstance().CreateMessage();
+		pMessage->AddPair("entity", "810853");
+		pMessage->AddPair("action", "114514");
+		pMessage->AddPair("state", "1919");
+		pMessage->AddPair("dust", "engine");
+
+		GameMailboxManager::GetInstance().Publish(pMessage);
+
+		GameMessage* pGet = pTestMailbox->GetMessage(0);
+		std::cout << (*pGet)["state"] << std::endl;
+		std::cout << (*pGet)["dust"] << std::endl;
+}
 
 public:
 	static GameScene* Create()
