@@ -1,15 +1,17 @@
 #include "GameDirector.h"
+
 #include "GameBlockAllocator.h"
 #include "GameTimeModule.h"
-
 #include "GameGraphicModule.h"
+
+#include "GameMailbox.h"
 
 #include <new>
 #include <thread>
 #include <chrono>
 #include <unordered_map>
 
-// 默认场景
+// 默认场景(用于 Director 空转)
 class GameDefaultScene : public GameScene
 {
 private:
@@ -32,9 +34,6 @@ public:
 	// 是否退出主循环
 	bool		m_bIsQuit;
 
-	// 储存场景构造函数的表
-	std::unordered_map<std::string, GameSceneConstructor> m_mapSceneConstructors;
-
 	// 用于控制游戏帧率的变量
 	std::chrono::steady_clock::time_point t1;		// 当帧工作完成前的时间点
 	std::chrono::steady_clock::time_point t2;		// 当帧工作完成后的时间点
@@ -44,6 +43,9 @@ public:
 	std::chrono::duration<double> dTarget;
 	std::chrono::duration<double> dTimeUsed;
 	std::chrono::duration<double> dSleepTime;
+
+	// 储存场景构造函数的表
+	std::unordered_map<std::string, GameSceneConstructor> m_mapSceneConstructors;
 
 public:
 	Impl()
@@ -101,8 +103,7 @@ void GameDirector::Run()
 int GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor)
 {
 	m_pImpl->m_mapSceneConstructors[strSceneName] = funcConstructor;
-
-	return -1;
+	return m_pImpl->m_mapSceneConstructors.size() - 1;
 }
 
 void GameDirector::ShiftScene(std::string strSceneName)

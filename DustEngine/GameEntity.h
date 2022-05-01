@@ -55,7 +55,7 @@ private:
 
 protected:
 	GameEntity();
-	virtual ~GameEntity();
+	~GameEntity();
 
 	friend class GameScene;
 	friend class GameFactory;

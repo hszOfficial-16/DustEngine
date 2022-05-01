@@ -51,6 +51,9 @@
     <ClCompile Include="GameResourceManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="GameMailbox.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameBlockAllocator.h">
@@ -106,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="GamePhotographicSystem.h">
       <Filter>Header\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMailbox.h">
+      <Filter>Header\GameEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,6 +5,8 @@
 #include "GameComponent.h"
 #include "GameSystem.h"
 
+#include "GameMailbox.h"
+
 #include "GameBlockAllocator.h"
 
 #include <new>
@@ -77,6 +79,30 @@ public:
 	void DestroySystem(GameSystem* pSystem)
 	{
 		GameBlockAllocator::GetInstance().Free(pSystem, pSystem->GetSize());
+	}
+
+	GameMessage* CreateMessage()
+	{
+		void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameMessage));
+		return new (pMem) GameMessage();
+	}
+
+	void DestroyMessage(GameMessage* pMessage)
+	{
+		pMessage->~GameMessage();
+		GameBlockAllocator::GetInstance().Free(pMessage, sizeof(GameMessage));
+	}
+
+	GameMailbox* CreateMailbox(const std::initializer_list<std::pair<std::string, std::string>>& listPairs)
+	{
+		void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameMailbox));
+		return new (pMem) GameMailbox(listPairs);
+	}
+
+	void DestroyMailbox(GameMailbox* pMailbox)
+	{
+		pMailbox->~GameMailbox();
+		GameBlockAllocator::GetInstance().Free(pMailbox, sizeof(GameMailbox));
 	}
 
 public:

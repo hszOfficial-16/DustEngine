@@ -34,13 +34,13 @@ public:
 					_pSprite->GetTexture(),
 					_pSprite->GetClipRect(),
 					{
-						(GameGraphicModule::GetInstance().GetWindowSize().x / 2 + 
-						(_pSpriteTransform->GetPosition().x - _pCameraTransform->GetPosition().x) * 100.0f -
+						GameGraphicModule::GetInstance().GetWindowSize().x / 2 +
+						((_pSpriteTransform->GetPosition().x - _pCameraTransform->GetPosition().x) * 100.0f -
 						_pSprite->GetTexture()->GetSize().x * _pSpriteTransform->GetScale().x * _pSprite->GetAnchor().x) *
 						_pCamera->GetZoom(),
 
-						(GameGraphicModule::GetInstance().GetWindowSize().y / 2 - 
-							(_pSpriteTransform->GetPosition().y - _pCameraTransform->GetPosition().y) * 100.0f -
+						GameGraphicModule::GetInstance().GetWindowSize().y / 2 -
+						((_pSpriteTransform->GetPosition().y - _pCameraTransform->GetPosition().y) * 100.0f +
 						_pSprite->GetTexture()->GetSize().y * _pSpriteTransform->GetScale().y * _pSprite->GetAnchor().y) *
 						_pCamera->GetZoom(),
 

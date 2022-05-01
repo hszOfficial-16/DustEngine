@@ -40,9 +40,18 @@ public:
 		m_pSceneNext = nullptr;
 	}
 
-	// 由于组件的生命周期由场景管理
-	// 所以实体不负责析构所有组件
-	~Impl() = default;
+	~Impl()
+	{
+		for (std::unordered_map<std::string, GameComponent*>::iterator iter = m_mapComponents.begin();
+			iter != m_mapComponents.end(); iter++)
+		{
+			if (m_pScene)
+			{
+				m_pScene->DeleteComponent((*iter).second);
+			}
+			GameBlockAllocator::GetInstance().Free((*iter).second, (*iter).second->GetSize());
+		}
+	}
 };
 
 GameEntity* GameEntity::GetParent()

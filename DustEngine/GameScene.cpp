@@ -28,7 +28,6 @@ public:
 		{
 			GameFactory::GetInstance().DestroySystem(pSystem);
 		}
-
 		for (std::unordered_map<std::string, GameComponent*>::iterator iter = m_mapComponentHead.begin();
 			iter != m_mapComponentHead.end(); iter++)
 		{
@@ -37,7 +36,6 @@ public:
 				GameFactory::GetInstance().DestroyComponent(pComponent);
 			}
 		}
-
 		for (GameEntity* pEntity = m_pEntityHead; pEntity; pEntity = pEntity->GetSceneNext())
 		{
 			GameFactory::GetInstance().DestroyEntity(pEntity);
