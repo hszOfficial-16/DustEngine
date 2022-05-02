@@ -5,25 +5,31 @@
 #include <unordered_set>
 #include <unordered_map>
 
+size_t GamePair::Hasher::Combine(size_t seed, std::string strValue) const
+{
+	return seed ^ std::hash<std::string>()(strValue) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
 class GameMessage::Impl
 {
 public:
-	std::unordered_map<std::string, std::string> m_mapPairs;
+	std::unordered_map<std::string, std::string> m_mapPair;
+
+	// 引用计数
+	uint16_t m_nReferenceCount;
+
+public:
+	Impl() : m_nReferenceCount(0) {}
 };
 
-const std::string& GameMessage::operator[](const std::string strKey)
+std::string& GameMessage::operator[](const std::string& strKey)
 {
-	return m_pImpl->m_mapPairs[strKey];
+	return m_pImpl->m_mapPair[strKey];
 }
 
-void GameMessage::AddPair(const std::string& strKey, const std::string& strValue)
+uint16_t& GameMessage::GetReferenceCount()
 {
-	m_pImpl->m_mapPairs[strKey] = strValue;
-}
-
-void GameMessage::DeletePair(const std::string& strKey)
-{
-	m_pImpl->m_mapPairs.erase(strKey);
+	return m_pImpl->m_nReferenceCount;
 }
 
 GameMessage::GameMessage()
@@ -41,161 +47,188 @@ GameMessage::~GameMessage()
 class GameMailbox::Impl
 {
 public:
-	// 投递到该信箱所需要满足的条件
-	std::unordered_map<std::string, std::string> m_mapPairs;
-	
-	// 已经投递到该信箱中的消息
-	std::vector<GameMessage*> m_vecMessages;
+	// 信箱的名称
+	std::string m_strName;
+
+	// 将消息分发给该信箱所需要满足的条件
+	std::unordered_map<std::string, std::string> m_mapRequirement;
+
+	// 已经分发到该信箱中的消息
+	std::vector<GameMessage*> m_vecMessage;
 
 public:
-	Impl(const std::initializer_list<std::pair<std::string, std::string>>& listPairs)
+	Impl(const Def& defMailbox)
 	{
-		m_mapPairs.clear();
+		m_strName = defMailbox.strName;
 
-		for (std::initializer_list<std::pair<std::string, std::string>>::iterator iter = listPairs.begin();
-			iter != listPairs.end(); iter++)
+		for (std::initializer_list<GamePair>::iterator iter = defMailbox.listRequirement.begin();
+			iter != defMailbox.listRequirement.end(); iter++)
 		{
-			m_mapPairs[(*iter).first] = (*iter).second;
+			m_mapRequirement[(*iter).strKey] = (*iter).strValue;
+		}
+	}
+	~Impl()
+	{
+		for (std::vector<GameMessage*>::iterator iter = m_vecMessage.begin();
+			iter != m_vecMessage.end(); iter++)
+		{
+			if (--(*iter)->GetReferenceCount() > 0) continue;
+
+			(*iter)->~GameMessage();
+			GameBlockAllocator::GetInstance().Free(*iter, sizeof(GameMessage));
 		}
 	}
 };
 
+const std::string& GameMailbox::operator[](const std::string& strKey)
+{
+	return m_pImpl->m_mapRequirement[strKey];
+}
+
+const std::string& GameMailbox::GetName()
+{
+	return m_pImpl->m_strName;
+}
+
 GameMessage* GameMailbox::GetMessage(size_t nIndex)
 {
-	return m_pImpl->m_vecMessages[nIndex];
+	return m_pImpl->m_vecMessage[nIndex];
+}
+
+size_t GameMailbox::GetMessageCount()
+{
+	return m_pImpl->m_vecMessage.size();
 }
 
 void GameMailbox::Clear()
 {
-	m_pImpl->m_vecMessages.clear();
+	m_pImpl->m_vecMessage.clear();
 }
 
-GameMailbox::GameMailbox(const std::initializer_list<std::pair<std::string, std::string>>& listPairs)
+GameMailbox::GameMailbox(const Def& defMailbox)
 {
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Impl));
-	m_pImpl = new (pMem) Impl(listPairs);
+	m_pImpl = new (pMem) Impl(defMailbox);
 }
 
 GameMailbox::~GameMailbox()
 {
-	// 清除该信箱的所有缓存
-	GameMailboxManager::GetInstance().ClearCache(this);
-
+	m_pImpl->~Impl();
 	GameBlockAllocator::GetInstance().Free(m_pImpl, sizeof(Impl));
 }
-
-// from boost (functional/hash):
-// see http://www.boost.org/doc/libs/1_35_0/doc/html/hash/combine.html template
-template <typename T>
-inline void hash_combine(std::size_t& seed, const T& val) {
-	seed ^= std::hash<T>()(val) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
-// auxiliary generic functions to create a hash value using a seed
-template <typename T> inline void hash_val(std::size_t& seed, const T& val) {
-	hash_combine(seed, val);
-}
-template <typename T, typename... Types>
-inline void hash_val(std::size_t& seed, const T& val, const Types &... args) {
-	hash_combine(seed, val);
-	hash_val(seed, args...);
-}
-
-template <typename... Types>
-inline std::size_t hash_val(const Types &... args) {
-	std::size_t seed = 0;
-	hash_val(seed, args...);
-	return seed;
-}
-
-struct pair_hash {
-	template <class T1, class T2>
-	std::size_t operator()(const std::pair<T1, T2>& p) const {
-		return hash_val(p.first, p.second);
-	}
-};
 
 class GameMailboxManager::Impl
 {
 public:
-	std::unordered_set<GameMailbox*> m_setMailboxes;
+	std::unordered_set<GameMailbox*> m_setMailbox;
 
-	// 不符合该条件的所有信箱的缓存
-	std::unordered_map<std::pair<std::string, std::string>, std::vector<GameMailbox*>, pair_hash> m_mapUnqualified;
+	// 所有不符合该条件的信箱
+	std::unordered_map<GamePair, std::unordered_set<GameMailbox*>, GamePair::Hasher, GamePair::Equalizer> m_mapQualified;
+
+public:
+	~Impl()
+	{
+		for (std::unordered_set<GameMailbox*>::iterator iter = m_setMailbox.begin();
+			iter != m_setMailbox.end(); iter++)
+		{
+			(*iter)->~GameMailbox();
+			GameBlockAllocator::GetInstance().Free(*iter, sizeof(GameMailbox));
+		}
+	}
 };
 
 void GameMailboxManager::Publish(GameMessage* pMessage)
 {
-	std::unordered_set<GameMailbox*> setCandidate(m_pImpl->m_setMailboxes);
+	std::unordered_set<GameMailbox*> setCandidate;
 
-	// 将所有不符合条件的信箱淘汰出去
-	for (std::unordered_set<GameMailbox*>::iterator iterMailbox = m_pImpl->m_setMailboxes.begin();
-		iterMailbox != m_pImpl->m_setMailboxes.end(); iterMailbox++)
+	// 将所有符合消息其中一个条件的信箱加入候选名单
+	for (std::unordered_map<std::string, std::string>::iterator iterPair = pMessage->m_pImpl->m_mapPair.begin();
+		iterPair != pMessage->m_pImpl->m_mapPair.end(); iterPair++)
 	{
-		for (std::unordered_map<std::string, std::string>::iterator iterPair = (*iterMailbox)->m_pImpl->m_mapPairs.begin();
-			iterPair != (*iterMailbox)->m_pImpl->m_mapPairs.end(); iterPair++)
+		GamePair pairTemp = { (*iterPair).first, (*iterPair).second };
+
+		if (m_pImpl->m_mapQualified.find(pairTemp) != m_pImpl->m_mapQualified.end())
 		{
-			for (std::vector<GameMailbox*>::iterator iterEliminated = m_pImpl->m_mapUnqualified[*iterPair].begin();
-				iterEliminated != m_pImpl->m_mapUnqualified[*iterPair].end(); iterEliminated++)
+			for (std::unordered_set<GameMailbox*>::iterator iterMailbox = m_pImpl->m_mapQualified[pairTemp].begin();
+				iterMailbox != m_pImpl->m_mapQualified[pairTemp].end(); iterMailbox++)
 			{
-				setCandidate.erase(*iterEliminated);
+				setCandidate.insert(*iterMailbox);
 			}
 		}
 	}
 
-	// 将消息发布到符合消息的信箱中去
+	// 对候选信箱的每一个条件进行仔细的比较
+	for (std::unordered_set<GameMailbox*>::iterator iterMailbox = setCandidate.begin();
+		iterMailbox != setCandidate.end(); iterMailbox++)
+	{
+		for (std::unordered_map<std::string, std::string>::iterator iterPair = (*iterMailbox)->m_pImpl->m_mapRequirement.begin();
+			iterPair != (*iterMailbox)->m_pImpl->m_mapRequirement.end(); iterPair++)
+		{
+			if (pMessage->m_pImpl->m_mapPair.find((*iterPair).first) == pMessage->m_pImpl->m_mapPair.end())
+			{
+				setCandidate.erase(*iterMailbox);
+			}
+			else if ((*pMessage)[(*iterPair).first] != (*iterPair).second)
+			{
+				setCandidate.erase(*iterMailbox);
+			}
+		}
+	}
+
+	// 将消息推送到所有符合条件的信箱中
 	for (std::unordered_set<GameMailbox*>::iterator iter = setCandidate.begin();
 		iter != setCandidate.end(); iter++)
 	{
-		(*iter)->m_pImpl->m_vecMessages.push_back(pMessage);
+		(*iter)->m_pImpl->m_vecMessage.push_back(pMessage);
 	}
 }
 
-void GameMailboxManager::Register(GameMailbox* pMailbox)
+void GameMailboxManager::AddMailbox(GameMailbox* pMailbox)
 {
-	m_pImpl->m_setMailboxes.insert(pMailbox);
-
-	// 缓存该信箱需要信息满足的条件
-	GameMailboxManager::GetInstance().Cache(pMailbox);
-}
-
-void GameMailboxManager::Unregister(GameMailbox* pMailbox)
-{
-	// 清除该信箱的缓存
-	GameMailboxManager::GetInstance().ClearCache(pMailbox);
-
-	m_pImpl->m_setMailboxes.erase(pMailbox);
-}
-
-void GameMailboxManager::Cache(GameMailbox* pMailbox)
-{
-	for (std::unordered_map<std::string, std::string>::iterator iterPair = pMailbox->m_pImpl->m_mapPairs.begin();
-		iterPair != pMailbox->m_pImpl->m_mapPairs.end(); iterPair++)
+	if (!pMailbox)
 	{
-		for (std::unordered_set<GameMailbox*>::iterator iterMailbox = m_pImpl->m_setMailboxes.begin();
-			iterMailbox != m_pImpl->m_setMailboxes.end(); iterMailbox++)
-		{
-			// 如果这个信箱不符合该条件，则缓存到不符合该条件的表中
-			if ((*iterMailbox)->m_pImpl->m_mapPairs[(*iterPair).first] != (*iterPair).second)
-			{
-				m_pImpl->m_mapUnqualified[*iterPair].push_back(*iterMailbox);
-			}
-		}
+		return;
+	}
+
+	if (m_pImpl->m_setMailbox.find(pMailbox) != m_pImpl->m_setMailbox.end())
+	{
+		return;
+	}
+
+	m_pImpl->m_setMailbox.insert(pMailbox);
+
+	// 缓存该信箱关注符合什么条件的消息
+	for (std::unordered_map<std::string, std::string>::iterator iterPair = pMailbox->m_pImpl->m_mapRequirement.begin();
+		iterPair != pMailbox->m_pImpl->m_mapRequirement.end(); iterPair++)
+	{
+		m_pImpl->m_mapQualified[{(*iterPair).first, (*iterPair).second}].insert(pMailbox);
 	}
 }
 
-void GameMailboxManager::ClearCache(GameMailbox* pMailbox)
+void GameMailboxManager::DeleteMailbox(GameMailbox* pMailbox)
 {
-	for (std::unordered_map<std::string, std::string>::iterator iterPair = pMailbox->m_pImpl->m_mapPairs.begin();
-		iterPair != pMailbox->m_pImpl->m_mapPairs.end(); iterPair++)
+	if (!pMailbox)
 	{
-		std::vector<GameMailbox*>::iterator iterFound = m_pImpl->m_mapUnqualified[*iterPair].begin();
-		
-		// 在缓存向量中找到该缓存
-		while ((*iterFound) != pMailbox) iterFound++;
-
-		// 删除该缓存
-		m_pImpl->m_mapUnqualified[*iterPair].erase(iterFound);
+		return;
 	}
+
+	if (m_pImpl->m_setMailbox.find(pMailbox) == m_pImpl->m_setMailbox.end())
+	{
+		return;
+	}
+
+	m_pImpl->m_setMailbox.erase(pMailbox);
+
+	// 清除缓存
+	for (std::unordered_map<std::string, std::string>::iterator iterPair = pMailbox->m_pImpl->m_mapRequirement.begin();
+		iterPair != pMailbox->m_pImpl->m_mapRequirement.end(); iterPair++)
+	{
+		m_pImpl->m_mapQualified[{(*iterPair).first, (*iterPair).second}].erase(pMailbox);
+	}
+
+	// 释放内存
+	pMailbox->~GameMailbox();
+	GameBlockAllocator::GetInstance().Free(pMailbox, sizeof(GameMailbox));
 }
 
 GameMailboxManager::GameMailboxManager()

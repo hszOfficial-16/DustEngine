@@ -4,6 +4,8 @@
 #include "GameFileModule.h"
 #include "GamePhotographicSystem.h"
 
+#include "GameMailbox.h"
+
 #include <iostream>
 
 GameEntity* CreateCreature()
@@ -54,20 +56,29 @@ private:
 		GamePhotographicSystem::Def defPhotographic;
 		AddSystem(GameFactory::GetInstance().CreateSystem<GamePhotographicSystem>(defPhotographic));
 
-		GameMailbox* pTestMailbox = GameFactory::GetInstance().CreateMailbox({ { "entity", "810853" } });
-		GameMailboxManager::GetInstance().Register(pTestMailbox);
+		GameMailbox* pMailbox1 = GameFactory::GetInstance().CreateMailbox({ "test", { {"action", "1919"} } });
+		GameMailbox* pMailbox2 = GameFactory::GetInstance().CreateMailbox({ "test2", { {"entity", "114514"} } });
+		GameMailbox* pMailbox3 = GameFactory::GetInstance().CreateMailbox({ "test3", { {"entity", "1919"} } });
+		GameMailbox* pMailbox4 = GameFactory::GetInstance().CreateMailbox({ "test4", { {"state", "222"} } });
+
+		GameMailboxManager::GetInstance().AddMailbox(pMailbox1);
+		GameMailboxManager::GetInstance().AddMailbox(pMailbox2);
+		GameMailboxManager::GetInstance().AddMailbox(pMailbox3);
 
 		GameMessage* pMessage = GameFactory::GetInstance().CreateMessage();
-		pMessage->AddPair("entity", "810853");
-		pMessage->AddPair("action", "114514");
-		pMessage->AddPair("state", "1919");
-		pMessage->AddPair("dust", "engine");
-
+		(*pMessage)["entity"] = "114514";
+		(*pMessage)["action"] = "1919";
+		(*pMessage)["state"] = "111";
 		GameMailboxManager::GetInstance().Publish(pMessage);
 
-		GameMessage* pGet = pTestMailbox->GetMessage(0);
-		std::cout << (*pGet)["state"] << std::endl;
-		std::cout << (*pGet)["dust"] << std::endl;
+		GameMessage* pMessage2 = GameFactory::GetInstance().CreateMessage();
+		(*pMessage2)["entity"] = "1919";
+		GameMailboxManager::GetInstance().Publish(pMessage2);
+
+		std::cout << pMailbox1->GetMessageCount() << std::endl;
+		std::cout << pMailbox2->GetMessageCount() << std::endl;
+		std::cout << pMailbox3->GetMessageCount() << std::endl;
+		std::cout << pMailbox4->GetMessageCount() << std::endl;
 }
 
 public:
@@ -77,4 +88,4 @@ public:
 	}
 };
 
-static int s_nSceneIndex = GameDirector::GetInstance().RegisterScene("Test", Test::Create);
+static size_t s_nSceneIndex = GameDirector::GetInstance().RegisterScene("Test", Test::Create);

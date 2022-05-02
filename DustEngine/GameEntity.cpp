@@ -47,7 +47,7 @@ public:
 		{
 			if (m_pScene)
 			{
-				m_pScene->DeleteComponent((*iter).second);
+				GameBlockAllocator::GetInstance().Free((*iter).second, (*iter).second->GetSize());
 			}
 			GameBlockAllocator::GetInstance().Free((*iter).second, (*iter).second->GetSize());
 		}

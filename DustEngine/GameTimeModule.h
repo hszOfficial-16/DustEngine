@@ -22,7 +22,9 @@ public:
 	// 设置计时器的持续时间(单位: 秒)
 	void	SetDuration(float fTimeDuration);
 
+	// 获取计时器的回调函数
 	const std::function<void()>& GetCallback();
+	// 设置计时器的回调函数
 	void SetCallback(const std::function<void()>& funcCallback);
 
 private:

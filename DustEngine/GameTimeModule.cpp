@@ -51,7 +51,7 @@ public:
 public:
 	Impl()
 	{
-		m_nFrameRate = 60;	// 妹说就是 60 帧
+		m_nFrameRate = 60;	// 没说就是 60 帧
 		m_nFrameCount = 0;
 	}
 	~Impl()

@@ -10,7 +10,7 @@ public:
 	void Run();
 
 	// 注册一个场景
-	int RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor);
+	size_t RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor);
 
 	// 切换为索引的场景
 	void ShiftScene(std::string strSceneName);

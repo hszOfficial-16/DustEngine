@@ -89,14 +89,16 @@ public:
 
 	void DestroyMessage(GameMessage* pMessage)
 	{
+		if (--pMessage->GetReferenceCount() > 0) return;
+
 		pMessage->~GameMessage();
 		GameBlockAllocator::GetInstance().Free(pMessage, sizeof(GameMessage));
 	}
 
-	GameMailbox* CreateMailbox(const std::initializer_list<std::pair<std::string, std::string>>& listPairs)
+	GameMailbox* CreateMailbox(const GameMailbox::Def& defMailbox)
 	{
 		void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameMailbox));
-		return new (pMem) GameMailbox(listPairs);
+		return new (pMem) GameMailbox(defMailbox);
 	}
 
 	void DestroyMailbox(GameMailbox* pMailbox)

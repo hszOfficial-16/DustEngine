@@ -100,7 +100,7 @@ void GameDirector::Run()
 	}
 }
 
-int GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor)
+size_t GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor)
 {
 	m_pImpl->m_mapSceneConstructors[strSceneName] = funcConstructor;
 	return m_pImpl->m_mapSceneConstructors.size() - 1;
