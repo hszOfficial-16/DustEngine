@@ -104,10 +104,15 @@ void GameEntity::AddChild(GameEntity* pChild)
 
 void GameEntity::DeleteChild(GameEntity* pChild)
 {
-	if (!pChild) return;
+	if (!pChild)
+	{
+		return;
+	}
 
-	// 若 pEntity 不是该节点的子节点，则返回
-	if (pChild->m_pImpl->m_pParent != this) return;
+	if (pChild->m_pImpl->m_pParent != this)
+	{
+		return;
+	}
 
 	pChild->m_pImpl->m_pParent = nullptr;
 
@@ -135,7 +140,10 @@ void GameEntity::DeleteChild(GameEntity* pChild)
 
 void GameEntity::AddComponent(GameComponent* pComponent)
 {
-	if (!pComponent) return;
+	if (!pComponent)
+	{
+		return;
+	}
 
 	// 将组件加入到该实体中
 	pComponent->SetEntity(this);
@@ -151,7 +159,7 @@ void GameEntity::AddComponent(GameComponent* pComponent)
 	if (GetScene()) GetScene()->AddComponent(pComponent);
 }
 
-void GameEntity::DeleteComponent(const std::string& strName)
+void GameEntity::DestroyComponent(const std::string& strName)
 {
 	// 寻找该组件，如果没找到就返回
 	std::unordered_map<std::string, GameComponent*>::iterator iter =
@@ -163,7 +171,7 @@ void GameEntity::DeleteComponent(const std::string& strName)
 	// 如果实体在场景中，则从场景中删除该组件
 	if (m_pImpl->m_pScene) m_pImpl->m_pScene->DeleteComponent(pComponent);
 
-	// 将组件从实体中删除,并析构掉
+	// 将组件从实体中删除
 	m_pImpl->m_mapComponents.erase(iter);
 
 	GameComponent* pFound = GetComponentList();
@@ -173,6 +181,7 @@ void GameEntity::DeleteComponent(const std::string& strName)
 	}
 	pFound->SetEntityNext(pComponent->GetEntityNext());
 
+	// 释放组件的内存
 	GameBlockAllocator::GetInstance().Free(pComponent, pComponent->GetSize());
 }
 
@@ -209,19 +218,13 @@ void GameEntity::SetScene(GameScene* pScene)
 	m_pImpl->m_pScene = pScene;
 }
 
-void GameEntity::AddComponentToScene(GameScene* pScene)
-{
-	for (std::unordered_map<std::string, GameComponent*>::iterator iter = m_pImpl->m_mapComponents.begin();
-		iter != m_pImpl->m_mapComponents.end(); iter++)
-	{
-		pScene->AddComponent((*iter).second);
-	}
-}
-
-GameEntity::GameEntity()
+GameEntity::GameEntity(const GameEntity::Def& defEntity)
 {
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Impl));
 	m_pImpl = new (pMem) Impl();
+
+	// 执行用户自定义的初始化函数
+	defEntity.funcInit(this);
 }
 
 GameEntity::~GameEntity()

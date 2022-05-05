@@ -19,7 +19,7 @@ void GameTimer::SetDuration(float fDuration)
 
 	m_bIsOver = false;
 	m_fTimeDuration = fDuration;
-	m_nTimeCreated = GameTimeSystem::GetInstance().GetCurrentTime();
+	m_nTimeCreated = GameTimeModule::GetInstance().GetCurrentTime();
 }
 
 const std::function<void()>& GameTimer::GetCallback()
@@ -41,7 +41,7 @@ GameTimer::GameTimer(const GameTimer::Def& defTimer)
 	m_bIsOver = true;
 }
 
-class GameTimeSystem::Impl
+class GameTimeModule::Impl
 {
 public:
 	uint8_t							m_nFrameRate;
@@ -51,7 +51,7 @@ public:
 public:
 	Impl()
 	{
-		m_nFrameRate = 60;	// 没说就是 60 帧
+		m_nFrameRate = 60;
 		m_nFrameCount = 0;
 	}
 	~Impl()
@@ -59,12 +59,12 @@ public:
 		for (std::unordered_set<GameTimer*>::iterator iter = m_setTimers.begin();
 			iter != m_setTimers.end(); iter++)
 		{
-			GameTimeSystem::GetInstance().DestroyTimer(*iter);
+			GameTimeModule::GetInstance().DestroyTimer(*iter);
 		}
 	}
 };
 
-void GameTimeSystem::Update()
+void GameTimeModule::Update()
 {
 	m_pImpl->m_nFrameCount++;
 
@@ -81,24 +81,27 @@ void GameTimeSystem::Update()
 	}
 }
 
-uint64_t GameTimeSystem::GetCurrentTime()
+uint64_t GameTimeModule::GetCurrentTime()
 {
 	return m_pImpl->m_nFrameCount;
 }
 
-uint8_t GameTimeSystem::GetFrameRate()
+uint8_t GameTimeModule::GetFrameRate()
 {
 	return m_pImpl->m_nFrameRate;
 }
 
-void GameTimeSystem::SetFrameRate(uint8_t nFrameRate)
+void GameTimeModule::SetFrameRate(uint8_t nFrameRate)
 {
 	m_pImpl->m_nFrameRate = nFrameRate;
 }
 
-GameTimer* GameTimeSystem::CreateTimer(const GameTimer::Def& defTimer)
+GameTimer* GameTimeModule::CreateTimer(const GameTimer::Def& defTimer)
 {
-	if (defTimer.fTimeDuration < 0.0f) return nullptr;
+	if (defTimer.fTimeDuration < 0.0f)
+	{
+		return nullptr;
+	}
 
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameTimer));
 	GameTimer* pTimer = new (pMem) GameTimer(defTimer);
@@ -106,24 +109,31 @@ GameTimer* GameTimeSystem::CreateTimer(const GameTimer::Def& defTimer)
 	pTimer->m_bIsOver = false;
 	pTimer->m_nTimeCreated = m_pImpl->m_nFrameCount;
 
+	m_pImpl->m_setTimers.insert(pTimer);
+
 	return pTimer;
 }
 
-void GameTimeSystem::DestroyTimer(GameTimer* pTimer)
+void GameTimeModule::DestroyTimer(GameTimer* pTimer)
 {
-	if (!pTimer) return;
+	if (!pTimer)
+	{
+		return;
+	}
+
+	m_pImpl->m_setTimers.erase(pTimer);
 
 	pTimer->~GameTimer();
 	GameBlockAllocator::GetInstance().Free(pTimer, sizeof(GameTimer));
 }
 
-GameTimeSystem::GameTimeSystem()
+GameTimeModule::GameTimeModule()
 {
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Impl));
 	m_pImpl = new (pMem) Impl();
 }
 
-GameTimeSystem::~GameTimeSystem()
+GameTimeModule::~GameTimeModule()
 {
 	m_pImpl->~Impl();
 	GameBlockAllocator::GetInstance().Free(m_pImpl, sizeof(Impl));

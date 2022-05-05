@@ -9,11 +9,8 @@ public:
 	// 开始运行
 	void Run();
 
-	// 注册一个场景
-	size_t RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor);
-
-	// 切换为索引的场景
-	void ShiftScene(std::string strSceneName);
+	// 切换当前场景
+	void ShiftScene(const GameScene::Def& defScene);
 
 private:
 	class Impl;

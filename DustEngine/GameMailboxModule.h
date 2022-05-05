@@ -1,5 +1,5 @@
-#ifndef _GAME_MAILBOX_H_
-#define _GAME_MAILBOX_H_
+#ifndef _GAME_MAILBOX_MODULE_H_
+#define _GAME_MAILBOX_MODULE_H_
 
 #include <string>
 #include <initializer_list>
@@ -42,6 +42,11 @@ struct GamePair
 class GameMessage
 {
 public:
+	struct Def
+	{
+		std::initializer_list<GamePair> listPair;
+	};
+
 	std::string& operator[](const std::string& strKey);
 
 protected:
@@ -52,10 +57,9 @@ private:
 	Impl* m_pImpl;
 
 private:
-	GameMessage();
+	GameMessage(const Def& defMessage);
 	~GameMessage();
 
-	friend class GameFactory;
 	friend class GameMailbox;
 	friend class GameMailboxManager;
 };
@@ -97,7 +101,6 @@ private:
 	GameMailbox(const Def& defMailbox);
 	~GameMailbox();
 
-	friend class GameFactory;
 	friend class GameMailboxManager;
 };
 
@@ -105,13 +108,12 @@ class GameMailboxManager
 {
 public:
 	// 发布一个消息
-	void Publish(GameMessage* pMessage);
+	void Publish(const std::initializer_list<GamePair>& listPair);
 
-	// 添加一个信箱并缓存
-	void AddMailbox(GameMailbox* pMailbox);
-
-	// 删除一个信箱并清除其缓存
-	void DeleteMailbox(GameMailbox* pMailbox);
+	// 创建一个信箱并缓存
+	GameMailbox* CreateMailbox(const GameMailbox::Def& defMailbox);
+	// 销毁一个信箱并清除其缓存
+	void DestroyMailbox(GameMailbox* pMailbox);
 
 private:
 	class Impl;
@@ -131,4 +133,4 @@ private:
 	GameMailboxManager();
 };
 
-#endif // !_GAME_EVENT_MODULE_H_
+#endif // !_GAME_MAILBOX_MODULE_H_

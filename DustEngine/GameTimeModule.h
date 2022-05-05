@@ -18,9 +18,9 @@ public:
 	};
 
 	// 获取计时器的持续时间(单位: 秒)
-	float	GetDuration();
+	float GetDuration();
 	// 设置计时器的持续时间(单位: 秒)
-	void	SetDuration(float fTimeDuration);
+	void SetDuration(float fTimeDuration);
 
 	// 获取计时器的回调函数
 	const std::function<void()>& GetCallback();
@@ -38,43 +38,43 @@ private:
 	GameTimer(const GameTimer::Def& defTimer);
 	~GameTimer() = default;
 
-	friend class GameTimeSystem;
+	friend class GameTimeModule;
 };
 
-class GameTimeSystem
+class GameTimeModule
 {
 public:
 	// 维护时间系统
-	void		Update();
+	void Update();
 
 	// 获取游戏从启动到现在经过的帧
-	uint64_t	GetCurrentTime();
+	uint64_t GetCurrentTime();
 
 	// 获取游戏帧率
-	uint8_t		GetFrameRate();
+	uint8_t	GetFrameRate();
 	// 设置游戏帧率
-	void		SetFrameRate(uint8_t nFrameRate);
+	void SetFrameRate(uint8_t nFrameRate);
 
 	// 创建计时器
-	GameTimer*	CreateTimer(const GameTimer::Def& defTimer);
+	GameTimer* CreateTimer(const GameTimer::Def& defTimer);
 	// 销毁计时器
-	void		DestroyTimer(GameTimer* pTimer);
+	void DestroyTimer(GameTimer* pTimer);
 
 private:
 	class Impl;
 	Impl* m_pImpl;
 
 public:
-	~GameTimeSystem();
-	GameTimeSystem(const GameTimeSystem&) = delete;
-	GameTimeSystem& operator=(const GameTimeSystem&) = delete;
-	static GameTimeSystem& GetInstance()
+	~GameTimeModule();
+	GameTimeModule(const GameTimeModule&) = delete;
+	GameTimeModule& operator=(const GameTimeModule&) = delete;
+	static GameTimeModule& GetInstance()
 	{
-		static GameTimeSystem instance;
+		static GameTimeModule instance;
 		return instance;
 	}
 private:
-	GameTimeSystem();
+	GameTimeModule();
 };
 
 #endif // !_GAME_TIME_MODULE_

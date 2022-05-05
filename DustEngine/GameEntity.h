@@ -1,7 +1,10 @@
 #ifndef _GAME_ENTITY_H_
 #define _GAME_ENTITY_H_
 
+#include "GameBlockAllocator.h"
+
 #include <string>
+#include <functional>
 
 class GameScene;
 class GameComponent;
@@ -9,6 +12,16 @@ class GameComponent;
 class GameEntity
 {
 public:
+	struct Def
+	{
+		std::function<void(GameEntity*)> funcInit;
+
+		Def() : funcInit([](GameEntity*) {}) {}
+
+		Def(std::function<void(GameEntity*)> funcInitIn) :
+			funcInit(funcInitIn) {}
+	};
+
 	// 获取父实体
 	GameEntity* GetParent();
 	// 设置父实体
@@ -24,10 +37,18 @@ public:
 	// 获取下一个子实体
 	GameEntity* GetNext();
 
-	// 添加组件
-	void AddComponent(GameComponent* pComponent);
-	// 删除组件
-	void DeleteComponent(const std::string& strName);
+	template<typename Component>
+	GameComponent* CreateComponent(const typename Component::Def& defComponent)
+	{
+		void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Component));
+		typename Component::Def* pDefComponent = (typename Component::Def*) & defComponent;
+		GameComponent* pComponent = new (pMem) Component(*pDefComponent);
+		AddComponent(pComponent);
+		return pComponent;
+	}
+
+	// 销毁组件
+	void DestroyComponent(const std::string& strName);
 
 	// 获取组件
 	GameComponent* GetComponent(const std::string& strName);
@@ -46,19 +67,18 @@ protected:
 	// 设置实体所属的场景
 	void SetScene(GameScene* pScene);
 
-	// 将实体的所有组件全部添加到场景中
-	void AddComponentToScene(GameScene* pScene);
+	// 添加组件
+	void AddComponent(GameComponent* pComponent);
 
 private:
 	class Impl;
 	Impl* m_pImpl;
 
 protected:
-	GameEntity();
+	GameEntity(const GameEntity::Def& defEntity);
 	~GameEntity();
 
 	friend class GameScene;
-	friend class GameFactory;
 };
 
 #endif // !_GAME_ENTITY_H_

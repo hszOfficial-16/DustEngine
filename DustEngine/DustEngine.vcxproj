@@ -156,13 +156,11 @@
     <ClInclude Include="GameData.h" />
     <ClInclude Include="GameDirector.h" />
     <ClInclude Include="GameEntity.h" />
-    <ClInclude Include="GameMailbox.h" />
-    <ClInclude Include="GameFactory.h" />
+    <ClInclude Include="GameMailboxModule.h" />
     <ClInclude Include="GameFileModule.h" />
     <ClInclude Include="GameGraphicModule.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameMediaModule.h" />
-    <ClInclude Include="GameResourceManager.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="GamePhotographicSystem.h" />
     <ClInclude Include="GameSpriteComponent.h" />
@@ -176,9 +174,8 @@
     <ClCompile Include="GameFileModule.cpp" />
     <ClCompile Include="GameBlockAllocator.cpp" />
     <ClCompile Include="GameGraphicModule.cpp" />
-    <ClCompile Include="GameMailbox.cpp" />
+    <ClCompile Include="GameMailboxModule.cpp" />
     <ClCompile Include="GameMediaModule.cpp" />
-    <ClCompile Include="GameResourceManager.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="GameTimeModule.cpp" />
   </ItemGroup>

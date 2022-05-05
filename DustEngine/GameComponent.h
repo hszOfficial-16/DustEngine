@@ -1,9 +1,6 @@
 #ifndef _GAME_COMPONENT_H_
 #define _GAME_COMPONENT_H_
 
-#include "GameBlockAllocator.h"
-
-#include <new>
 #include <string>
 
 class GameEntity;
@@ -56,7 +53,6 @@ protected:
 
 	friend class GameEntity;
 	friend class GameScene;
-	friend class GameFactory;
 };
 
 #endif // !_GAME_COMPONENT_H_

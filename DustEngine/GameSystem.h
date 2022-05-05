@@ -47,7 +47,6 @@ protected:
 	virtual ~GameSystem() = default;
 
 	friend class GameScene;
-	friend class GameFactory;
 };
 
 #endif // !_GAME_SYSTEM_H_

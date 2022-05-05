@@ -4,7 +4,7 @@
 #include "GameTimeModule.h"
 #include "GameGraphicModule.h"
 
-#include "GameMailbox.h"
+#include "GameMailboxModule.h"
 
 #include <new>
 #include <thread>
@@ -15,7 +15,7 @@
 class GameDefaultScene : public GameScene
 {
 private:
-	GameDefaultScene() = default;
+	GameDefaultScene() : GameScene({}) {}
 	~GameDefaultScene() = default;
 
 public:
@@ -44,9 +44,6 @@ public:
 	std::chrono::duration<double> dTimeUsed;
 	std::chrono::duration<double> dSleepTime;
 
-	// 储存场景构造函数的表
-	std::unordered_map<std::string, GameSceneConstructor> m_mapSceneConstructors;
-
 public:
 	Impl()
 	{
@@ -70,7 +67,7 @@ void GameDirector::Run()
 		m_pImpl->t1 = std::chrono::steady_clock::now();
 
 		// 更新时间系统
-		GameTimeSystem::GetInstance().Update();
+		GameTimeModule::GetInstance().Update();
 
 		// 清除上一帧的图像缓存
 		GameGraphicModule::GetInstance().RenderClear();
@@ -83,7 +80,7 @@ void GameDirector::Run()
 
 		// 计算休眠时间
 		m_pImpl->t2 = std::chrono::steady_clock::now();
-		m_pImpl->dTarget = std::chrono::duration<double>(1.0 / GameTimeSystem::GetInstance().GetFrameRate());
+		m_pImpl->dTarget = std::chrono::duration<double>(1.0 / GameTimeModule::GetInstance().GetFrameRate());
 		m_pImpl->dTimeUsed = std::chrono::duration<double>(m_pImpl->t2 - m_pImpl->t1);
 		m_pImpl->dSleepTime = std::chrono::duration<double>(m_pImpl->dTarget - m_pImpl->dTimeUsed + m_pImpl->dSleepAdjust);
 
@@ -100,23 +97,15 @@ void GameDirector::Run()
 	}
 }
 
-size_t GameDirector::RegisterScene(std::string strSceneName, GameSceneConstructor funcConstructor)
+void GameDirector::ShiftScene(const GameScene::Def& defScene)
 {
-	m_pImpl->m_mapSceneConstructors[strSceneName] = funcConstructor;
-	return m_pImpl->m_mapSceneConstructors.size() - 1;
-}
-
-void GameDirector::ShiftScene(std::string strSceneName)
-{
-	// 场景的内存不交给内存池管理
-	if (m_pImpl->m_mapSceneConstructors.find(strSceneName) == m_pImpl->m_mapSceneConstructors.end())
-		return;
-
 	if (m_pImpl->m_pCurrentScene)
 	{
-		delete m_pImpl->m_pCurrentScene;
+		m_pImpl->m_pCurrentScene->~GameScene();
+		GameBlockAllocator::GetInstance().Free(m_pImpl->m_pCurrentScene, sizeof(GameScene));
 	}
-	m_pImpl->m_pCurrentScene = m_pImpl->m_mapSceneConstructors[strSceneName]();
+	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameScene));
+	m_pImpl->m_pCurrentScene = new (pMem) GameScene(defScene);
 }
 
 GameDirector::GameDirector()

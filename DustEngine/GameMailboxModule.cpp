@@ -1,4 +1,4 @@
-#include "GameMailbox.h"
+#include "GameMailboxModule.h"
 #include "GameBlockAllocator.h"
 
 #include <new>
@@ -19,7 +19,15 @@ public:
 	uint16_t m_nReferenceCount;
 
 public:
-	Impl() : m_nReferenceCount(0) {}
+	Impl(const Def& defMessage)
+		: m_nReferenceCount(0)
+	{
+		for (std::initializer_list<GamePair>::iterator iter = defMessage.listPair.begin();
+			iter != defMessage.listPair.end(); iter++)
+		{
+			m_mapPair[(*iter).strKey] = (*iter).strValue;
+		}
+	}
 };
 
 std::string& GameMessage::operator[](const std::string& strKey)
@@ -32,10 +40,10 @@ uint16_t& GameMessage::GetReferenceCount()
 	return m_pImpl->m_nReferenceCount;
 }
 
-GameMessage::GameMessage()
+GameMessage::GameMessage(const Def& defMessage)
 {
 	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(Impl));
-	m_pImpl = new (pMem) Impl();
+	m_pImpl = new (pMem) Impl(defMessage);
 }
 
 GameMessage::~GameMessage()
@@ -137,8 +145,13 @@ public:
 	}
 };
 
-void GameMailboxManager::Publish(GameMessage* pMessage)
+void GameMailboxManager::Publish(const std::initializer_list<GamePair>& listPair)
 {
+	GameMessage::Def defMessage = { listPair };
+
+	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameMessage));
+	GameMessage* pMessage = new (pMem) GameMessage(defMessage);
+
 	std::unordered_set<GameMailbox*> setCandidate;
 
 	// 将所有符合消息其中一个条件的信箱加入候选名单
@@ -183,17 +196,10 @@ void GameMailboxManager::Publish(GameMessage* pMessage)
 	}
 }
 
-void GameMailboxManager::AddMailbox(GameMailbox* pMailbox)
+GameMailbox* GameMailboxManager::CreateMailbox(const GameMailbox::Def& defMailbox)
 {
-	if (!pMailbox)
-	{
-		return;
-	}
-
-	if (m_pImpl->m_setMailbox.find(pMailbox) != m_pImpl->m_setMailbox.end())
-	{
-		return;
-	}
+	void* pMem = GameBlockAllocator::GetInstance().Allocate(sizeof(GameMessage));
+	GameMailbox* pMailbox = new (pMem) GameMailbox(defMailbox);
 
 	m_pImpl->m_setMailbox.insert(pMailbox);
 
@@ -203,9 +209,11 @@ void GameMailboxManager::AddMailbox(GameMailbox* pMailbox)
 	{
 		m_pImpl->m_mapQualified[{(*iterPair).first, (*iterPair).second}].insert(pMailbox);
 	}
+
+	return pMailbox;
 }
 
-void GameMailboxManager::DeleteMailbox(GameMailbox* pMailbox)
+void GameMailboxManager::DestroyMailbox(GameMailbox* pMailbox)
 {
 	if (!pMailbox)
 	{

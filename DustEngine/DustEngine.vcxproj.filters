@@ -48,10 +48,7 @@
     <ClCompile Include="GameEntity.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="GameResourceManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GameMailbox.cpp">
+    <ClCompile Include="GameMailboxModule.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,20 +95,14 @@
     <ClInclude Include="GameCameraComponent.h">
       <Filter>Header\GameComponent</Filter>
     </ClInclude>
-    <ClInclude Include="GameResourceManager.h">
-      <Filter>Header\GameEngine</Filter>
-    </ClInclude>
     <ClInclude Include="GameSystem.h">
-      <Filter>Header\GameEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="GameFactory.h">
       <Filter>Header\GameEngine</Filter>
     </ClInclude>
     <ClInclude Include="GamePhotographicSystem.h">
       <Filter>Header\GameSystem</Filter>
     </ClInclude>
-    <ClInclude Include="GameMailbox.h">
-      <Filter>Header\GameEngine</Filter>
+    <ClInclude Include="GameMailboxModule.h">
+      <Filter>Header\GameCommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
